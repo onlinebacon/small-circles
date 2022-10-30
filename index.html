@@ -1,0 +1,119 @@
+<html>
+    <head>
+        <style>
+            body {
+                margin: 0px 0px 40px 0px;
+                background-color: #151515;
+                font-family: Arial, Helvetica, sans-serif;
+                color: #fff;
+            }
+            input[type="range"] {
+                width: 512px;
+            }
+            input[type="number"] {
+                width: 70px;
+                background-color: rgba(0, 0, 0, 0.25);
+                color: #fff;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+            }
+            .input-box {
+                margin-top: 30px;
+            }
+            .input-box, .canvas-box, .circles-box {
+                width: 600px;
+                background-color: #272727;
+                margin-left: auto;
+                margin-right: auto;
+                padding: 20px;
+            }
+            .circle-field {
+                display: inline-block;
+            }
+            .canvas-box {
+                text-align: center;
+            }
+            input {
+                vertical-align: middle;
+            }
+            .box-title {
+                font-size: 20px;
+                margin-bottom: 20px;
+            }
+            .add-circle {
+                float: right;
+                background-color: rgb(42, 82, 129);
+                padding: 5px 10px;
+                cursor: pointer;
+            }
+            .circle-field input {
+                width: 100px;
+                margin-right: 18px;
+            }
+            .remove-circle {
+                display: inline-block;
+                width: 17px;
+                height: 17px;
+                background-color: #f42;
+                border: 1px solid #f64; 
+                border-radius: 3px;
+                cursor: pointer;
+                text-align: center;
+                vertical-align: bottom;
+            }
+            .circle {
+                margin-top: 10px;
+                text-align: center;
+            }
+            .template {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="input-box">
+            <div class="zoom">
+                <div class="title">Zoom</div>
+                <input type="range" min="64" max="2048" value="230" step="1">
+            </div>
+            <div class="coord">
+                <div class="title">Latitude</div>
+                <input type="range" min="-90" max="90" value="0" step="0.05">
+                <input type="number" min="-90" max="90" value="0" step="0.05">
+            </div>
+            <div class="coord">
+                <div class="title">Longitude</div>
+                <input type="range" min="-180" max="180" value="0" step="0.05">
+                <input type="number" min="-180" max="180" value="0" step="0.05">
+            </div>
+            <div class="coord">
+                <div class="title">Azimuth</div>
+                <input type="range" min="0" max="360" value="0" step="0.05">
+                <input type="number" min="0" max="360" value="0" step="0.05">
+            </div>
+        </div>
+        <div class="canvas-box">
+            <canvas width="512" height="512"></canvas>
+        </div>
+        <div class="circles-box">
+            <div class="add-circle">Add</div>
+            <div class="box-title">
+                Circles
+            </div>
+            <div class="circle template">
+                <div class="circle-field">
+                    Latitude: <input type="number" name="lat">
+                </div>
+                <div class="circle-field">
+                    Longitude: <input type="number" name="lon">
+                </div>
+                <div class="circle-field">
+                    Radius: <input type="number" name="radius">
+                </div>
+                <div class="remove-circle">&#215;</div>
+            </div>
+        </div>
+    </body>
+</html>
+<script src="./math.js"></script>
+<script src="./script.js"></script>
