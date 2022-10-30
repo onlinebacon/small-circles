@@ -226,7 +226,10 @@ const buildCircleDOM = () => {
     const dom = htmlToDOM(circleHTML);
     const circle = addCircle(0, 0, 0, '#fb0');
     dom.querySelector('.remove-circle').onclick = () => {
+        const index = circles.indexOf(circle);
+        circles.splice(index, 1);
         dom.remove();
+        render();
     };
     [...dom.querySelectorAll('input')].forEach(input => {
         const name = input.getAttribute('name');
