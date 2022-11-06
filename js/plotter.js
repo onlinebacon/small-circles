@@ -3,7 +3,7 @@ import { Transform, Vector } from './transform.js';
 const LEFT_BUTTON = 0;
 const LEFT_BUTTON_MASK = 1;
 const color = {
-	background: '#151515',
+	background: '#2c2c2c',
 	latitudeLines: 'rgba(0, 255, 192, 0.5)',
 	longitudeLines: 'rgba(0, 192, 255, 0.5)',
 	border: 'rgba(0, 255, 255, 1)',
@@ -11,15 +11,16 @@ const color = {
 	smallCircle: '#fb0',
 	crossHair: '#fff',
 };
-const smallCircles = [];
-const nVertices = 360;
+const gridSmallCircles = [];
+const userSmallCircles = [];
+const nVertices = 90;
 const global = new Transform();
 const auxV = new Vector();
 const observerUpdateHandlers = [];
 
 let canvas, ctx;
 let cx, cy;
-let viewRadius = 255;
+let viewRadius = 190;
 
 const project = (vector) => {
 	let [ x, y, z ] = vector.apply(global, auxV);
@@ -115,17 +116,27 @@ const clear = () => {
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 };
 
-const updateViews = () => {
-	for (const circle of smallCircles) {
-		circle.updateView();
+const forEachCircle = (fn) => {
+	for (let i=0; i<gridSmallCircles.length; ++i) {
+		fn(gridSmallCircles[i]);
+	}
+	for (let i=0; i<userSmallCircles.length; ++i) {
+		fn(userSmallCircles[i]);
 	}
 };
 
+const updateViews = () => {
+	forEachCircle((circle) => {
+		circle.updateView();
+	});
+};
+
 const drawNevagives = () => {
-	for (const circle of smallCircles) {
+	forEachCircle((circle) => {
+		circle.updateView();
 		ctx.strokeStyle = circle.color;
 		circle.drawNegative();
-	}
+	});
 };
 
 const drawCrossHair = () => {
@@ -141,6 +152,7 @@ const drawCrossHair = () => {
 
 const render = () => {
 	clear();
+	ctx.lineWidth = 1.5;
 	ctx.lineJoin = 'round';
 	ctx.lineCap = 'round';
 	updateViews();
@@ -151,28 +163,24 @@ const render = () => {
 	ctx.arc(cx, cy, viewRadius, 0, Math.PI*2);
 	ctx.fill();
 	ctx.stroke();
-	for (const circle of smallCircles) {
+	forEachCircle((circle) => {
 		ctx.strokeStyle = circle.color;
 		circle.drawPositive();
-	}
-	ctx.fillStyle = '#fff';
-	const [ lat, lon, azm ] = global.calcInverseOrientation();
-	ctx.font = '12px monospace';
-	ctx.fillText('lat: ' + (lat/Math.PI*180).toFixed(3)*1, 10, 10);
-	ctx.fillText('lon: ' + (lon/Math.PI*180).toFixed(3)*1, 10, 22);
-	ctx.fillText('azm: ' + (azm/Math.PI*180).toFixed(3)*1, 10, 34);
+	})
+	ctx.lineWidth = 1;
 	drawCrossHair();
 };
 
 const biuldGrid = () => {
-	const n = 12;
+	gridSmallCircles.length = 0;
+	const n = 10;
 	for (let i=0; i<n; ++i) {
 		const angle = Math.PI/n*i;
-		smallCircles.push(new SmallCircle(0, angle, Math.PI*0.5, color.longitudeLines));
+		gridSmallCircles.push(new SmallCircle(0, angle, Math.PI*0.5, color.longitudeLines));
 	}
 	for (let i=1; i<n; ++i) {
 		const angle = Math.PI/n*i;
-		smallCircles.push(new SmallCircle(Math.PI*0.5, 0, angle, color.latitudeLines));
+		gridSmallCircles.push(new SmallCircle(Math.PI*0.5, 0, angle, color.latitudeLines));
 	}
 };
 
@@ -259,7 +267,7 @@ const bindCanvas = () => {
 	canvas.addEventListener('wheel', e => {
 		const { deltaY } = e;
 		if (!deltaY) return;
-		viewRadius = Math.exp(Math.log(viewRadius) - deltaY*2e-2);
+		viewRadius = Math.exp(Math.log(viewRadius) - deltaY/Math.abs(deltaY)*0.2);
 		render();
 	});
 };
@@ -269,18 +277,17 @@ export const setCavnas = (dom) => {
 	ctx = dom.getContext('2d');
 	bindCanvas();
 	handleCanvasResize();
-	biuldGrid();
-	render();
 };
 
 export const resize = (width, height) => {
 	canvas.width = width;
 	canvas.height = height;
+	handleCanvasResize();
 };
 
 export const addSmallCircle = (lat, lon, rad) => {
 	const circle = new SmallCircle(lat, lon, rad, color.smallCircle);
-	smallCircles.push(circle);
+	userSmallCircles.push(circle);
 	return circle;
 };
 
@@ -295,3 +302,10 @@ export const update = () => {
 export const onObserverUpdate = (handler) => {
 	observerUpdateHandlers.push(handler);
 };
+
+export const removeSmallCircle = (circle) => {
+	const index = userSmallCircles.indexOf(circle);
+	userSmallCircles.splice(index, 1);
+};
+
+biuldGrid();

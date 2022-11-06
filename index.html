@@ -1,10 +1,50 @@
 <html>
-    <head>
-        <link rel="stylesheet" href="css/style.css">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-        <script type="module" src="js/main.js"></script>
-    </head>
-    <body>
-        <canvas width="512" height="512"></canvas>
-    </body>
+	<head>
+		<link rel="stylesheet" href="css/style.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+		<meta charset="utf-8">
+		<script type="module" src="js/main.js"></script>
+	</head>
+	<body>
+		<div class="main-left">
+			<div class="box circles-box">
+				<div class="add-button">Add</div>
+				<div class="box-title">Circles</div>
+				<div class="circles-container">
+					<!-- <div class="circle-item">
+						<div class="values">35.5° S, 24.5° W, 32.4°</div>
+						<div class="remove-circle"></div>
+					</div> -->
+					<!-- <div class="circle-edit">
+						<div class="field">
+							<div class="field-title">Latitude:</div>
+							<input type="text" name="lat">
+						</div>
+						<div class="field">
+							<div class="field-title">Longitude:</div>
+							<input type="text" name="lon">
+						</div>
+						<div class="field">
+							<div class="field-title">Radius:</div>
+							<input type="text" name="rad">
+						</div>
+					</div> -->
+				</div>
+			</div>
+			<!-- <div class="box settings-box">
+				<div class="box-title">Settings</div>
+				<div class="field">
+					<div class="field-title">Angle format</div>
+					<select id="angle_format"></select>
+				</div>
+			</div> -->
+		</div>
+		<div class="main-right">
+			<div class="box canvas-box">
+				<canvas></canvas>
+			</div>
+			<!-- <div class="box view-box">
+			</div> -->
+		</div>
+	</body>
 </html>
