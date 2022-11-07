@@ -142,7 +142,6 @@ const bindAddCircleButton = () => {
 		dom.querySelector('input').focus();
 		Plotter.update();
 	});
-	setTimeout(() => button.click(), 100);
 };
 
 const fillAngleFormatSelect = () => {
