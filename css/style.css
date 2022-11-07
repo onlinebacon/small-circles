@@ -63,26 +63,26 @@ div.field input[type="text"] {
 	height: 19px;
 	width: 150px;
 }
-div.circle-item {
+div.circle-view {
 	text-align: left;
-	background-color: #888;
+	background-color: #ccc;
 	border-radius: 2px;
 	padding: 2px 0px 2px 6px;
 	cursor: pointer;
+	height: 14px;
 }
-div.circle-item div.values {
-	color: #222;
-	font-size: 11px;
+div.circle-view div.values {
+	color: #555;
+	font-size: 12px;
 	display: inline-block;
-	font-style: italic;
 }
-div.circle-item, div.circle-edit {
+div.circle-view, div.circle-edit {
 	margin-top: 10px;
 }
-div.circle-item div.remove-circle {
+div.circle-view div.remove-circle {
 	display: none;
-	width: 10px;
-	height: 10px;
+	width: 12px;
+	height: 12px;
 	margin-right: 2px;
 	float: right;
 	background-color: #722;
@@ -90,7 +90,7 @@ div.circle-item div.remove-circle {
 	border-radius: 2px;
 	border: 1px solid #500;
 }
-div.circle-item:hover div.remove-circle {
+div.circle-view:hover div.remove-circle {
 	display: inline-block;
 }
 select {
@@ -98,4 +98,8 @@ select {
 	background-color: #444;
 	color: #ccc;
 	width: 135px;
+}
+div.field input[type="text"].invalid {
+	color: rgb(173, 102, 102);
+	background-color: rgb(51, 31, 31);
 }

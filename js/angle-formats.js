@@ -16,7 +16,7 @@ const decompose = (value, weights) => {
 };
 
 const formats = [{
-	regex: /^([+\-]\s*)?\d+(\.\d+)(\s*°)?$/,
+	regex: /^([+\-]\s*)?\d+(\.\d+)?(\s*°)?$/,
 	sample: `5.213°`,
 	parse: (string) => {
 		return Number(string.replace(/\s*°\s*/, ''));

@@ -13,7 +13,7 @@ const color = {
 };
 const gridSmallCircles = [];
 const userSmallCircles = [];
-const nVertices = 90;
+const nVertices = 180;
 const global = new Transform();
 const auxV = new Vector();
 const observerUpdateHandlers = [];
@@ -30,7 +30,7 @@ const project = (vector) => {
 const findCircleSliceStart = (arr) => {
 	if (arr.length < 2) return 0;
 	let index = -1;
-	let dist = 0;
+	let dist = -1;
 	for (let i=0; i<arr.length; ++i) {
 		const a = arr.at(i - 1);
 		const b = arr[i];
