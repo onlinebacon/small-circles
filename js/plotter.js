@@ -20,7 +20,7 @@ const observerUpdateHandlers = [];
 let canvas, ctx;
 let cx, cy;
 let nDivisions = 6;
-let nVertices = 180;
+let nVertices = 90;
 let viewRadius = 190;
 
 const project = (vector) => {
@@ -296,6 +296,7 @@ export const addSmallCircle = (lat, lon, rad) => {
 	return circle;
 };
 
+export const getObserver = () => global.calcInverseOrientation();
 export const setObserver = (lat, lon, azm) => {
 	global.clear().rotateY(lon).rotateX(-lat).rotateZ(-azm);
 };
@@ -313,11 +314,13 @@ export const removeSmallCircle = (circle) => {
 	userSmallCircles.splice(index, 1);
 };
 
+export const getNVertices = () => nVertices;
 export const setNVertices = (n) => {
 	nVertices = n;
 	forEachCircle(circle => circle.buildVertices());
 };
 
+export const getNDivisions = () => nDivisions;
 export const setNDivisions = (n) => {
 	nDivisions = n;
 	biuldGrid();

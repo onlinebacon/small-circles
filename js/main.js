@@ -146,19 +146,52 @@ const bindAddCircleButton = () => {
 	});
 };
 
-const fillAngleFormatSelect = () => {
-	const select = document.querySelector('select');
+const initAngleFormatSelect = () => {
+	const select = document.querySelector('#angle_format');
 	AngleFormats.forEach((format, i) => {
 		select.innerHTML += `<option value="${i}">${format.sample}</option>`
 	});
+	select.addEventListener('input', () => {
+		angleFormat = AngleFormats[select.value];
+	});
+};
+
+const initNVerticesSelect = () => {
+	const select = document.querySelector('#n_vertices');
+	const values = [ 15, 30, 90, 180, 360, 720, 1080 ].reverse();
+	select.innerHTML += values.map(val => `<option value="${val}">${val}</option>`).join('');
+	select.addEventListener('input', () => {
+		Plotter.setNVertices(Number(select.value));
+		Plotter.update();
+	});
+	select.value = Plotter.getNVertices();
+};
+
+const initNDivisionsSelect = () => {
+	const select = document.querySelector('#n_divisions');
+	const values = [ 2, 4, 6, 8, 10, 12, 18, 20, 36 ].reverse();
+	select.innerHTML += values.map(val => `<option value="${val}">${val}</option>`).join('');
+	select.addEventListener('input', () => {
+		Plotter.setNDivisions(Number(select.value));
+		Plotter.update();
+	});
+	select.value = Plotter.getNDivisions();
+};
+
+const initSelects = () => {
+	initAngleFormatSelect();
+	initNVerticesSelect();
+	initNDivisionsSelect();
 };
 
 const bindViewBox = () => {
 	const viewBoxDOM = document.querySelector('.view-box');
 	const inputs = [ ...viewBoxDOM.querySelectorAll('input') ];
 	Plotter.onObserverUpdate((...args) => {
-		args.forEach((arg, i) => inputs[i].value = angleFormat.stringify(arg));
+		args.forEach((arg, i) => inputs[i].value = angleFormat.stringify(radToDeg(arg)));
 	});
+	const values = Plotter.getObserver().map(radToDeg).map(angleFormat.stringify);
+	inputs.forEach((input, i) => input.value = values[i]);
 };
 
 Plotter.setCavnas(canvas);
@@ -167,4 +200,4 @@ Plotter.update();
 
 bindAddCircleButton();
 bindViewBox();
-// fillAngleFormatSelect();
+initSelects();
