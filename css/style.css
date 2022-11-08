@@ -98,9 +98,12 @@ select {
 	float: right;
 	background-color: #444;
 	color: #ccc;
-	width: 135px;
+	width: 130px;
 }
 div.field input[type="text"].invalid {
 	color: rgb(173, 102, 102);
 	background-color: rgb(51, 31, 31);
+}
+.settings-content .field:nth-child(1) {
+	margin-top: 15px;
 }

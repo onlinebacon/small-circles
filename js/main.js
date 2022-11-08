@@ -191,7 +191,22 @@ const bindViewBox = () => {
 		args.forEach((arg, i) => inputs[i].value = angleFormat.stringify(radToDeg(arg)));
 	});
 	const values = Plotter.getObserver().map(radToDeg).map(angleFormat.stringify);
-	inputs.forEach((input, i) => input.value = values[i]);
+	inputs.forEach((input, i) => {
+		input.value = values[i];
+		input.addEventListener('input', () => {
+			const { value } = input;
+			const parsed = parseAngle(value);
+			if (isNaN(parsed)) {
+				addClass(input, 'invalid');
+				return;
+			}
+			removeClass(input, 'invalid');
+			const args = Plotter.getObserver();
+			args[i] = degToRad(parsed);
+			Plotter.setObserver(...args);
+			Plotter.update();
+		});
+	});
 };
 
 Plotter.setCavnas(canvas);

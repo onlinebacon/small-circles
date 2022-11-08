@@ -7,6 +7,21 @@
 	</head>
 	<body>
 		<div class="main-left">
+			<div class="box view-box">
+				<div class="box-title">Crosshair</div>
+				<div class="view-input">
+					<div class="title">Latitude</div>
+					<div class="content"><input type="text"></div>
+				</div>
+				<div class="view-input">
+					<div class="title">Longitude</div>
+					<div class="content"><input type="text"></div>
+				</div>
+				<div class="view-input">
+					<div class="title">Azimuth</div>
+					<div class="content"><input type="text"></div>
+				</div>
+			</div>
 			<div class="box circles-box">
 				<div class="add-button">Add</div>
 				<div class="box-title">Circles</div>
@@ -33,37 +48,31 @@
 			</div>
 			<div class="box settings-box">
 				<div class="box-title">Settings</div>
-				<div class="field">
-					<div class="field-title">Angle format</div>
-					<select id="angle_format"></select>
-				</div>
-				<div class="field">
-					<div class="field-title">N. Vertices</div>
-					<select id="n_vertices"></select>
-				</div>
-				<div class="field">
-					<div class="field-title">N. Divisions</div>
-					<select id="n_divisions"></select>
+				<div class="settings-content">
+					<div class="field">
+						<div class="field-title">Color scheme</div>
+						<select id="theme">
+							<option value="dark">Dark</option>
+						</select>
+					</div>
+					<div class="field">
+						<div class="field-title">Angle format</div>
+						<select id="angle_format"></select>
+					</div>
+					<div class="field">
+						<div class="field-title">N. Vertices</div>
+						<select id="n_vertices"></select>
+					</div>
+					<div class="field">
+						<div class="field-title">N. Divisions</div>
+						<select id="n_divisions"></select>
+					</div>
 				</div>
 			</div>
 		</div>
 		<div class="main-right">
 			<div class="box canvas-box">
 				<canvas width="511" height="511"></canvas>
-			</div>
-			<div class="box view-box">
-				<div class="view-input">
-					<div class="title">Latitude</div>
-					<div class="content"><input type="text"></div>
-				</div>
-				<div class="view-input">
-					<div class="title">Longitude</div>
-					<div class="content"><input type="text"></div>
-				</div>
-				<div class="view-input">
-					<div class="title">Azimuth</div>
-					<div class="content"><input type="text"></div>
-				</div>
 			</div>
 		</div>
 	</body>
