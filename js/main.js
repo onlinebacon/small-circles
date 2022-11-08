@@ -1,6 +1,8 @@
 import * as Plotter from './plotter.js';
 import AngleFormats from './angle-formats.js';
 
+window.Plotter = Plotter;
+
 const canvas = document.querySelector('canvas');
 const circlesContainer = document.querySelector('.circles-container');
 
@@ -151,9 +153,18 @@ const fillAngleFormatSelect = () => {
 	});
 };
 
+const bindViewBox = () => {
+	const viewBoxDOM = document.querySelector('.view-box');
+	const inputs = [ ...viewBoxDOM.querySelectorAll('input') ];
+	Plotter.onObserverUpdate((...args) => {
+		args.forEach((arg, i) => inputs[i].value = angleFormat.stringify(arg));
+	});
+};
+
 Plotter.setCavnas(canvas);
 Plotter.resize(canvas.width, canvas.height);
 Plotter.update();
 
 bindAddCircleButton();
+bindViewBox();
 // fillAngleFormatSelect();

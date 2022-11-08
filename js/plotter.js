@@ -13,13 +13,14 @@ const color = {
 };
 const gridSmallCircles = [];
 const userSmallCircles = [];
-const nVertices = 180;
 const global = new Transform();
 const auxV = new Vector();
 const observerUpdateHandlers = [];
 
 let canvas, ctx;
 let cx, cy;
+let nDivisions = 6;
+let nVertices = 180;
 let viewRadius = 190;
 
 const project = (vector) => {
@@ -70,6 +71,12 @@ class SmallCircle {
 		this.lon = lon;
 		this.rad = rad;
 		this.color = color;
+		this.positive = [];
+		this.negative = [];
+		this.buildVertices();
+	}
+	buildVertices() {
+		const { lat, lon, rad } = this;
 		const z = Math.cos(rad);
 		const zRad = Math.sin(rad);
 		const transform = new Transform().rotateX(lat).rotateY(-lon);
@@ -79,8 +86,7 @@ class SmallCircle {
 			const y = Math.cos(angle)*zRad;
 			return new Vector([ x, y, z ]).apply(transform);
 		});
-		this.positive = [];
-		this.negative = [];
+		return this;
 	}
 	updateView() {
 		const { vertices, positive, negative } = this;
@@ -173,13 +179,12 @@ const render = () => {
 
 const biuldGrid = () => {
 	gridSmallCircles.length = 0;
-	const n = 10;
-	for (let i=0; i<n; ++i) {
-		const angle = Math.PI/n*i;
+	for (let i=0; i<nDivisions; ++i) {
+		const angle = Math.PI/nDivisions*i;
 		gridSmallCircles.push(new SmallCircle(0, angle, Math.PI*0.5, color.longitudeLines));
 	}
-	for (let i=1; i<n; ++i) {
-		const angle = Math.PI/n*i;
+	for (let i=1; i<nDivisions; ++i) {
+		const angle = Math.PI/nDivisions*i;
 		gridSmallCircles.push(new SmallCircle(Math.PI*0.5, 0, angle, color.latitudeLines));
 	}
 };
@@ -306,6 +311,16 @@ export const onObserverUpdate = (handler) => {
 export const removeSmallCircle = (circle) => {
 	const index = userSmallCircles.indexOf(circle);
 	userSmallCircles.splice(index, 1);
+};
+
+export const setNVertices = (n) => {
+	nVertices = n;
+	forEachCircle(circle => circle.buildVertices());
+};
+
+export const setNDivisions = (n) => {
+	nDivisions = n;
+	biuldGrid();
 };
 
 biuldGrid();
