@@ -78,15 +78,21 @@ class CircleManager {
 
 const buildCircleViewDOM = (circleManager) => {
 	const valuesDOM = buildDOM('div', {'class': 'values'});
+	const removeButton = buildDOM('div', {'class': 'remove-circle'});
 	const dom = buildDOM(
 		'div',
 		{ 'class': 'circle-view' },
 		valuesDOM,
-		buildDOM('div', {'class': 'remove-circle'}),
+		removeButton,
 	);
 	const { lat, lon, rad } = circleManager.parsed;
 	const text = [ lat, lon, rad ].map(angleFormat.stringify).join(', ');
 	valuesDOM.innerText = text;
+	removeButton.addEventListener('click', () => {
+		dom.remove();
+		Plotter.removeSmallCircle(circleManager.circle);
+		Plotter.update();
+	});
 	return dom;
 };
 
