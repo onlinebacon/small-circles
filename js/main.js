@@ -153,6 +153,7 @@ const initAngleFormatSelect = () => {
 	});
 	select.addEventListener('input', () => {
 		angleFormat = AngleFormats[select.value];
+		updateViewInputs();
 	});
 };
 
@@ -184,15 +185,19 @@ const initSelects = () => {
 	initNDivisionsSelect();
 };
 
-const bindViewBox = () => {
-	const viewBoxDOM = document.querySelector('.view-box');
-	const inputs = [ ...viewBoxDOM.querySelectorAll('input') ];
-	Plotter.onObserverUpdate((...args) => {
-		args.forEach((arg, i) => inputs[i].value = angleFormat.stringify(radToDeg(arg)));
-	});
+const updateViewInputs = () => {
+	const inputs = [ ...document.querySelectorAll('.view-box input') ];
 	const values = Plotter.getObserver().map(radToDeg).map(angleFormat.stringify);
 	inputs.forEach((input, i) => {
 		input.value = values[i];
+	});
+};
+
+const bindViewBox = () => {
+	const viewBoxDOM = document.querySelector('.view-box');
+	const inputs = [ ...viewBoxDOM.querySelectorAll('input') ];
+	updateViewInputs();
+	inputs.forEach((input, i) => {
 		input.addEventListener('input', () => {
 			const { value } = input;
 			const parsed = parseAngle(value);
@@ -212,6 +217,7 @@ const bindViewBox = () => {
 Plotter.setCavnas(canvas);
 Plotter.resize(canvas.width, canvas.height);
 Plotter.update();
+Plotter.onObserverUpdate(updateViewInputs);
 
 bindAddCircleButton();
 bindViewBox();

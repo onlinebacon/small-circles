@@ -21,7 +21,7 @@ div.box {
 	border-radius: 5px;
 	padding: 15px;
 	background-color: #333;
-	box-shadow: -5px 5px 20px rgba(0, 0, 0, 0.25);
+	box-shadow: -5px 5px 15px rgba(0, 0, 0, 0.15);
 }
 div.box:not(:nth-child(1)) {
 	margin-top: 20px;
@@ -31,7 +31,7 @@ div.box-title {
 	font-size: 18px;
 	color: #aaa;
 }
-div.add-button {
+button.add-button {
 	float: right;
 	font-size: 10px;
 	cursor: pointer;
@@ -104,6 +104,6 @@ div.field input[type="text"].invalid {
 	color: rgb(173, 102, 102);
 	background-color: rgb(51, 31, 31);
 }
-.settings-content .field:nth-child(1) {
+.box-body .field:nth-child(1) {
 	margin-top: 15px;
 }
