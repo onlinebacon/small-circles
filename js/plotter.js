@@ -158,7 +158,8 @@ const drawCrossHair = () => {
 
 const render = () => {
 	clear();
-	ctx.lineWidth = 1.5;
+	const width = 3;
+	ctx.lineWidth = width*1.5;
 	ctx.lineJoin = 'round';
 	ctx.lineCap = 'round';
 	updateViews();
@@ -173,7 +174,7 @@ const render = () => {
 		ctx.strokeStyle = circle.color;
 		circle.drawPositive();
 	})
-	ctx.lineWidth = 1;
+	ctx.lineWidth = width*1;
 	drawCrossHair();
 };
 
