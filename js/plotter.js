@@ -1,4 +1,4 @@
-import { Transform, Vector } from './transform.js';
+import { Transform, Vector } from '../../jslib/three-d.js';
 
 const LEFT_BUTTON = 0;
 const LEFT_BUTTON_MASK = 1;
@@ -198,7 +198,7 @@ const handleTouchStart = (x, y) => {
 };
 
 const callObserverUpdateHandlers = () => {
-	const [ lat, lon, azm ] = global.calcInverseOrientation();
+	const [ lat, lon, azm ] = getObserver();
 	observerUpdateHandlers.forEach(handler => handler(lat, lon, azm));
 };
 
@@ -296,7 +296,14 @@ export const addSmallCircle = (lat, lon, rad) => {
 	return circle;
 };
 
-export const getObserver = () => global.calcInverseOrientation();
+export const getObserver = () => {
+	const [ ry, rx, rz ] = global.calcYXZRotation();
+	const lat = rx > Math.PI ? Math.PI*2 - rx : - rx;
+	const lon = ry > Math.PI ? ry - Math.PI*2 : ry;
+	const azm = Math.PI*2 - rz;
+	return [ lat, lon, azm ];
+}
+
 export const setObserver = (lat, lon, azm) => {
 	global.clear().rotateY(lon).rotateX(-lat).rotateZ(-azm);
 };
