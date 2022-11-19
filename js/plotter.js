@@ -301,7 +301,7 @@ export const getObserver = () => {
 	const [ ry, rx, rz ] = global.calcYXZRotation();
 	const lat = rx > Math.PI ? Math.PI*2 - rx : - rx;
 	const lon = ry > Math.PI ? ry - Math.PI*2 : ry;
-	const azm = Math.PI*2 - rz;
+	const azm = rz > 0 ? Math.PI*2 - rz : 0;
 	return [ lat, lon, azm ];
 }
 
