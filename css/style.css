@@ -1,4 +1,7 @@
 body {
+	--box-spacing: 20px;
+}
+body {
 	font-family: Arial, Helvetica, sans-serif;
 	margin: 26px 0px;
 	font-size: 0px;
@@ -11,7 +14,7 @@ div.main-left, div.main-right {
 	vertical-align: top;
 }
 div.main-left {
-	margin-right: 20px;
+	margin-right: var(--box-spacing);
 }
 div.main-left div.box {
 	width: 216px;
@@ -24,7 +27,7 @@ div.box {
 	box-shadow: -5px 5px 15px rgba(0, 0, 0, 0.15);
 }
 div.box:not(:nth-child(1)) {
-	margin-top: 20px;
+	margin-top: var(--box-spacing);
 }
 div.box-title {
 	text-align: left;
