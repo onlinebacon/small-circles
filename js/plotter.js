@@ -2,7 +2,10 @@ import { Transform, Vector } from '../../jslib/three-d.js';
 
 const LEFT_BUTTON = 0;
 const LEFT_BUTTON_MASK = 1;
-const color = {
+const lineWidth = 4.5;
+const crossHairLineWidth = 3;
+const pointRad = lineWidth*1;
+const colorMap = {
 	background: '#2c2c2c',
 	latitudeLines: 'rgba(0, 255, 192, 0.5)',
 	longitudeLines: 'rgba(0, 192, 255, 0.5)',
@@ -11,10 +14,11 @@ const color = {
 	smallCircle: '#fb0',
 	crossHair: '#fff',
 };
+
 const gridSmallCircles = [];
 const userSmallCircles = [];
 const global = new Transform();
-const auxV = new Vector();
+const projection = new Transform();
 const observerUpdateHandlers = [];
 
 let canvas, ctx;
@@ -23,9 +27,8 @@ let nDivisions = 6;
 let nVertices = 90;
 let viewRadius = 190;
 
-const project = (vector) => {
-	let [ x, y, z ] = vector.apply(global, auxV);
-	return [ cx + x*viewRadius, cy - y*viewRadius, z ];
+const project = (vector, dst) => {
+	return vector.apply(projection, dst);
 };
 
 const findCircleSliceStart = (arr) => {
@@ -73,27 +76,36 @@ class SmallCircle {
 		this.color = color;
 		this.positive = [];
 		this.negative = [];
+		this.createVertexArray();
 		this.buildVertices();
 	}
+	createVertexArray() {
+		this.vertices = [...new Array(nVertices)].map(() => new Vector());
+		this.projected = [...new Array(nVertices)].map(() => new Vector());
+		return this;
+	}
 	buildVertices() {
-		const { lat, lon, rad } = this;
+		if (this.vertices.length !== nVertices) {
+			this.createVertexArray();
+		}
+		const { vertices, lat, lon, rad } = this;
 		const z = Math.cos(rad);
 		const zRad = Math.sin(rad);
 		const transform = new Transform().rotateX(lat).rotateY(-lon);
-		this.vertices = [ ...new Array(nVertices) ].map((_, i) => {
+		for (let i=0; i<nVertices; ++i) {
 			const angle = (i/nVertices)*(Math.PI*2);
 			const x = Math.sin(angle)*zRad;
 			const y = Math.cos(angle)*zRad;
-			return new Vector([ x, y, z ]).apply(transform);
-		});
+			vertices[i].set([ x, y, z ]).apply(transform);
+		}
 		return this;
 	}
 	updateView() {
-		const { vertices, positive, negative } = this;
+		const { vertices, projected, positive, negative } = this;
 		positive.length = 0;
 		negative.length = 0;
 		for (let i=0; i<vertices.length; ++i) {
-			const point = project(vertices[i]);
+			const point = project(vertices[i], projected[i]);
 			const z = point[2];
 			if (z >= 0) positive.push(point);
 			else negative.push(point);
@@ -112,13 +124,23 @@ class SmallCircle {
 	}
 }
 
+const updateProjection = () => {
+	projection.set([
+		viewRadius, 0, 0,
+		0, -viewRadius, 0,
+		0, 0, 1,
+		cx, cy, 0,
+	]);
+	global.apply(projection, projection);
+};
+
 const handleCanvasResize = () => {
 	cx = canvas.width*0.5;
 	cy = canvas.height*0.5;
 };
 
 const clear = () => {
-	ctx.fillStyle = color.background;
+	ctx.fillStyle = colorMap.background;
 	ctx.fillRect(0, 0, canvas.width, canvas.height);
 };
 
@@ -132,22 +154,27 @@ const forEachCircle = (fn) => {
 };
 
 const updateViews = () => {
-	forEachCircle((circle) => {
-		circle.updateView();
-	});
+	forEachCircle((circle) => circle.updateView());
 };
 
 const drawNevagives = () => {
 	forEachCircle((circle) => {
-		circle.updateView();
 		ctx.strokeStyle = circle.color;
 		circle.drawNegative();
 	});
 };
 
+const drawPositives = () => {
+	forEachCircle((circle) => {
+		ctx.strokeStyle = circle.color;
+		circle.drawPositive();
+	});
+};
+
 const drawCrossHair = () => {
 	const size = 10;
-	ctx.strokeStyle = color.crossHair;
+	ctx.strokeStyle = colorMap.crossHair;
+	ctx.lineWidth = crossHairLineWidth;
 	ctx.beginPath();
 	ctx.moveTo(cx - size, cy);
 	ctx.lineTo(cx + size, cy);
@@ -156,25 +183,25 @@ const drawCrossHair = () => {
 	ctx.stroke();
 };
 
-const render = () => {
-	clear();
-	const width = 3;
-	ctx.lineWidth = width*1.5;
-	ctx.lineJoin = 'round';
-	ctx.lineCap = 'round';
-	updateViews();
-	drawNevagives();
-	ctx.fillStyle = color.surface;
-	ctx.strokeStyle = color.border;
+const drawBase = () => {
+	ctx.fillStyle = colorMap.surface;
+	ctx.strokeStyle = colorMap.border;
 	ctx.beginPath();
 	ctx.arc(cx, cy, viewRadius, 0, Math.PI*2);
 	ctx.fill();
 	ctx.stroke();
-	forEachCircle((circle) => {
-		ctx.strokeStyle = circle.color;
-		circle.drawPositive();
-	})
-	ctx.lineWidth = width*1;
+};
+
+const render = () => {
+	updateProjection();
+	updateViews();
+	clear();
+	ctx.lineWidth = lineWidth;
+	ctx.lineJoin = 'round';
+	ctx.lineCap = 'round';
+	drawNevagives();
+	drawBase();
+	drawPositives();
 	drawCrossHair();
 };
 
@@ -182,11 +209,11 @@ const biuldGrid = () => {
 	gridSmallCircles.length = 0;
 	for (let i=0; i<nDivisions; ++i) {
 		const angle = Math.PI/nDivisions*i;
-		gridSmallCircles.push(new SmallCircle(0, angle, Math.PI*0.5, color.longitudeLines));
+		gridSmallCircles.push(new SmallCircle(0, angle, Math.PI*0.5, colorMap.longitudeLines));
 	}
 	for (let i=1; i<nDivisions; ++i) {
 		const angle = Math.PI/nDivisions*i;
-		gridSmallCircles.push(new SmallCircle(Math.PI*0.5, 0, angle, color.latitudeLines));
+		gridSmallCircles.push(new SmallCircle(Math.PI*0.5, 0, angle, colorMap.latitudeLines));
 	}
 };
 
@@ -292,7 +319,7 @@ export const resize = (width, height) => {
 };
 
 export const addSmallCircle = (lat, lon, rad) => {
-	const circle = new SmallCircle(lat, lon, rad, color.smallCircle);
+	const circle = new SmallCircle(lat, lon, rad, colorMap.smallCircle);
 	userSmallCircles.push(circle);
 	return circle;
 };
