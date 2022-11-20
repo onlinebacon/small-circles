@@ -15,6 +15,7 @@ const colorMap = {
 	crossHair: '#fff',
 };
 
+const points = [];
 const gridSmallCircles = [];
 const userSmallCircles = [];
 const global = new Transform();
@@ -67,6 +68,48 @@ const drawHalfCircle = (arr, connect = false) => {
 	}
 	ctx.stroke();
 };
+
+const drawPoint = (point) => {
+	const { projected, color } = point;
+	const [ x, y ] = projected;
+	ctx.fillStyle = color;
+	ctx.beginPath();
+	ctx.arc(x, y, pointRad, 0, Math.PI*2);
+	ctx.fill();
+};
+
+class Point {
+	constructor(lat, lon, color) {
+		this.lat = lat;
+		this.lon = lon;
+		this.color = color;
+		this.isPositive = null;
+		this.vertex = new Vector();
+		this.projected = new Vector();
+		this.buildVertex();
+	}
+	buildVertex() {
+		const { lat, lon, vertex } = this;
+		vertex.set([ 0, 0, 1 ]).rotateX(lat).rotateY(-lon);
+		return this;
+	}
+	updateView() {
+		project(this.vertex, this.projected);
+		return this;
+	}
+	drawNegative() {
+		if (this.projected.z < 0) {
+			drawPoint(this);
+		}
+		return this;
+	}
+	drawPositive() {
+		if (this.projected.z >= 0) {
+			drawPoint(this);
+		}
+		return this;
+	}
+}
 
 class SmallCircle {
 	constructor(lat, lon, rad, color) {
@@ -155,6 +198,7 @@ const forEachCircle = (fn) => {
 
 const updateViews = () => {
 	forEachCircle((circle) => circle.updateView());
+	points.forEach(point => point.updateView());
 };
 
 const drawNevagives = () => {
@@ -162,6 +206,7 @@ const drawNevagives = () => {
 		ctx.strokeStyle = circle.color;
 		circle.drawNegative();
 	});
+	points.forEach(point => point.drawNegative());
 };
 
 const drawPositives = () => {
@@ -169,6 +214,7 @@ const drawPositives = () => {
 		ctx.strokeStyle = circle.color;
 		circle.drawPositive();
 	});
+	points.forEach(point => point.drawPositive());
 };
 
 const drawCrossHair = () => {
@@ -324,6 +370,12 @@ export const addSmallCircle = (lat, lon, rad) => {
 	return circle;
 };
 
+export const addPoint = (lat, lon, color = colorMap.point) => {
+	const point = new Point(lat, lon, color);
+	points.push(point);
+	return point;
+};
+
 export const getObserver = () => {
 	const [ ry, rx, rz ] = global.calcYXZRotation();
 	const lat = rx > Math.PI ? Math.PI*2 - rx : - rx;
@@ -347,6 +399,11 @@ export const onObserverUpdate = (handler) => {
 export const removeSmallCircle = (circle) => {
 	const index = userSmallCircles.indexOf(circle);
 	userSmallCircles.splice(index, 1);
+};
+
+export const removePoint = (point) => {
+	const index = points.indexOf(point);
+	points.splice(index, 1);
 };
 
 export const getNVertices = () => nVertices;
