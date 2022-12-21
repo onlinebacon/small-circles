@@ -2,8 +2,8 @@ import { Transform, Vector } from '../../jslib/three-d.js';
 
 const LEFT_BUTTON = 0;
 const LEFT_BUTTON_MASK = 1;
-const lineWidth = 4.5;
-const crossHairLineWidth = 3;
+const lineWidth = 1.5;
+const crossHairLineWidth = 1;
 const pointRad = lineWidth*1;
 const colorMap = {
 	background: '#2c2c2c',
