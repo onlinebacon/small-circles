@@ -4,7 +4,7 @@ const LEFT_BUTTON = 0;
 const LEFT_BUTTON_MASK = 1;
 const lineWidth = 1.5;
 const crossHairLineWidth = 1;
-const pointRad = lineWidth*1;
+const pointRad = lineWidth*1.5;
 const colorMap = {
 	background: '#2c2c2c',
 	latitudeLines: 'rgba(0, 255, 192, 0.5)',
@@ -13,11 +13,14 @@ const colorMap = {
 	surface: 'rgba(40, 40, 40, 0.8)',
 	smallCircle: '#fb0',
 	crossHair: '#fff',
+	line: '#fff',
+	point: '#fff',
 };
 
 const points = [];
 const gridSmallCircles = [];
 const userSmallCircles = [];
+const lines = [];
 const global = new Transform();
 const projection = new Transform();
 const observerUpdateHandlers = [];
@@ -27,6 +30,8 @@ let cx, cy;
 let nDivisions = 6;
 let nVertices = 90;
 let viewRadius = 190;
+
+const chordToArc = (chord) => Math.asin(chord/2)*2;
 
 const project = (vector, dst) => {
 	return vector.apply(projection, dst);
@@ -69,6 +74,19 @@ const drawHalfCircle = (arr, connect = false) => {
 	ctx.stroke();
 };
 
+const drawGreatCircleRoute = (arr, flip) => {
+	ctx.beginPath();
+	for (let i=0; i<arr.length; ++i) {
+		const [ x, y ] = arr[i];
+		if (i === 0 || i === flip) {
+			ctx.moveTo(x, y);
+		} else {
+			ctx.lineTo(x, y);
+		}
+	}
+	ctx.stroke();
+};
+
 const drawPoint = (point) => {
 	const { projected, color } = point;
 	const [ x, y ] = projected;
@@ -86,9 +104,9 @@ class Point {
 		this.isPositive = null;
 		this.vertex = new Vector();
 		this.projected = new Vector();
-		this.buildVertex();
+		this.buildVertices();
 	}
-	buildVertex() {
+	buildVertices() {
 		const { lat, lon, vertex } = this;
 		vertex.set([ 0, 0, 1 ]).rotateX(lat).rotateY(-lon);
 		return this;
@@ -167,6 +185,83 @@ class SmallCircle {
 	}
 }
 
+class Line {
+	constructor(lat1, lon1, lat2, lon2, color) {
+		this.color = color;
+		this.end1 = new Vector([ 0, 0, 1 ]).rotateX(lat1).rotateY(-lon1);
+		this.end2 = new Vector([ 0, 0, 1 ]).rotateX(lat2).rotateY(-lon2);
+		this.dif = new Vector().set(this.end2).sub(this.end1);
+		this.chord = this.dif.len();
+		this.arc = chordToArc(this.chord);
+		this.positive = [];
+		this.negative = [];
+		this.positiveFlip = null;
+		this.negativeFlip = null;
+		this.createVertexArray();
+		this.buildVertices();
+		this.updateView();
+	}
+	createVertexArray() {
+		const n = Math.ceil(this.arc/(Math.PI*2/nVertices)) + 1;
+		this.vertices = [...new Array(n)].map(() => new Vector());
+		this.projected = [...new Array(n)].map(() => new Vector());
+		return this;
+	}
+	buildVertices() {
+		if (this.vertices.length !== nVertices) {
+			this.createVertexArray();
+		}
+		const { vertices, end1, end2, chord, arc } = this;
+		const [ ax, ay, az ] = end1;
+		const [ bx, by, bz ] = end2;
+		const n = vertices.length;
+		const iScalar = 1/(n - 1);
+		for (let i=0; i<n; ++i) {
+			const val = i*iScalar;
+			const theta = arc*(0.5 - val);
+			const chordSegment = Math.sin(theta);
+			const wb = (chord*0.5 - chordSegment)/chord;
+			const wa = 1 - wb;
+			vertices[i].set([
+				ax*wa + bx*wb,
+				ay*wa + by*wb,
+				az*wa + bz*wb,
+			]).normalize();
+		}
+		return this;
+	}
+	updateView() {
+		const { vertices, projected, positive, negative } = this;
+		positive.length = 0;
+		negative.length = 0;
+		this.positiveFlip = null;
+		this.negativeFlip = null;
+		let last = null;
+		for (let i=0; i<vertices.length; ++i) {
+			const point = project(vertices[i], projected[i]);
+			const z = point[2];
+			const sign = z >= 0 ? 1 : -1;
+			if (sign === 1) {
+				positive.push(point);
+				if (last === -1) this.negativeFlip = negative.length;
+			} else {
+				negative.push(point);
+				if (last === 1) this.positiveFlip = positive.length;
+			}
+			last = sign;
+		}
+		return this;
+	}
+	drawNegative() {
+		drawGreatCircleRoute(this.negative, this.negativeFlip);
+		return this;
+	}
+	drawPositive() {
+		drawGreatCircleRoute(this.positive, this.positiveFlip);
+		return this;
+	}
+}
+
 const updateProjection = () => {
 	projection.set([
 		viewRadius, 0, 0,
@@ -199,6 +294,7 @@ const forEachCircle = (fn) => {
 const updateViews = () => {
 	forEachCircle((circle) => circle.updateView());
 	points.forEach(point => point.updateView());
+	lines.forEach(line => line.updateView());
 };
 
 const drawNevagives = () => {
@@ -206,7 +302,14 @@ const drawNevagives = () => {
 		ctx.strokeStyle = circle.color;
 		circle.drawNegative();
 	});
-	points.forEach(point => point.drawNegative());
+	points.forEach(point => {
+		ctx.strokeStyle = point.color;
+		point.drawNegative();
+	});
+	lines.forEach(line => {
+		ctx.strokeStyle = line.color;
+		line.drawNegative();
+	});
 };
 
 const drawPositives = () => {
@@ -214,7 +317,14 @@ const drawPositives = () => {
 		ctx.strokeStyle = circle.color;
 		circle.drawPositive();
 	});
-	points.forEach(point => point.drawPositive());
+	points.forEach(point => {
+		ctx.strokeStyle = point.color;
+		point.drawPositive();
+	});
+	lines.forEach(line => {
+		ctx.strokeStyle = line.color;
+		line.drawPositive();
+	});
 };
 
 const drawCrossHair = () => {
@@ -364,8 +474,8 @@ export const resize = (width, height) => {
 	handleCanvasResize();
 };
 
-export const addSmallCircle = (lat, lon, rad) => {
-	const circle = new SmallCircle(lat, lon, rad, colorMap.smallCircle);
+export const addSmallCircle = (lat, lon, rad, color = colorMap.smallCircle) => {
+	const circle = new SmallCircle(lat, lon, rad, color);
 	userSmallCircles.push(circle);
 	return circle;
 };
@@ -374,6 +484,12 @@ export const addPoint = (lat, lon, color = colorMap.point) => {
 	const point = new Point(lat, lon, color);
 	points.push(point);
 	return point;
+};
+
+export const addLine = (lat1, lon1, lat2, lon2, color = colorMap.line) => {
+	const line = new Line(lat1, lon1, lat2, lon2, color);
+	lines.push(line);
+	return line;
 };
 
 export const getObserver = () => {
@@ -404,6 +520,11 @@ export const removeSmallCircle = (circle) => {
 export const removePoint = (point) => {
 	const index = points.indexOf(point);
 	points.splice(index, 1);
+};
+
+export const removeLine = (line) => {
+	const index = lines.indexOf(line);
+	lines.splice(index, 1);
 };
 
 export const getNVertices = () => nVertices;
