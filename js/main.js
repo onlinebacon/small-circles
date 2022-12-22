@@ -1,4 +1,4 @@
-import * as Plotter from './plotter.js';
+import * as Plotter from '../../jslib/sphere-plotter.js';
 import AngleFormats from './angle-formats.js';
 
 window.Plotter = Plotter;
